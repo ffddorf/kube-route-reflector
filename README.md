@@ -23,7 +23,7 @@ You can find linux binaries with each release.
 Example:
 
 ```yaml
-kubernetes:
+clusters:
   - name: my-cluster
     host: "https://my-cluster:6443"
     # one or the other
