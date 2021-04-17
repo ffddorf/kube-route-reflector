@@ -4,6 +4,8 @@ import (
 	"context"
 	"flag"
 	"os"
+	"os/signal"
+	"syscall"
 
 	bnet "github.com/bio-routing/bio-rd/net"
 	bgp "github.com/bio-routing/bio-rd/protocols/bgp/server"
@@ -64,7 +66,9 @@ func main() {
 		log.WithError(err).Fatal("bgp server failed to start")
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	// shutdown logic
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
+
 	watcher.WatchClusters(ctx, log, conf.Clusters, server)
 }
