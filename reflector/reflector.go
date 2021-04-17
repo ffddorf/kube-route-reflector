@@ -1,37 +1,28 @@
 package reflector
 
 import (
-	"context"
-
 	bnet "github.com/bio-routing/bio-rd/net"
 	bio "github.com/bio-routing/bio-rd/protocols/bgp/server"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"k8s.io/client-go/informers"
-	"k8s.io/client-go/kubernetes"
 )
 
 type Server struct {
-	bgp        bio.BGPServer
-	kubeClient *kubernetes.Clientset
-
+	bgp           bio.BGPServer
 	conf          BGPConfig
 	staticPeerSet map[bnet.IP]struct{}
+	log           logrus.FieldLogger
 }
 
-func NewServer(bgp bio.BGPServer, kubeClient *kubernetes.Clientset, bgpConf BGPConfig) *Server {
+func NewServer(bgp bio.BGPServer, bgpConf BGPConfig) *Server {
 	return &Server{
 		bgp:           bgp,
-		kubeClient:    kubeClient,
 		conf:          bgpConf,
 		staticPeerSet: make(map[bnet.IP]struct{}),
 	}
 }
 
 func (s *Server) Start(log logrus.FieldLogger) error {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	localAddr, err := bnet.IPFromString(s.conf.LocalAddress)
 	if err != nil {
 		return errors.Wrap(err, "failed to read local address")
@@ -54,14 +45,5 @@ func (s *Server) Start(log logrus.FieldLogger) error {
 		return errors.Wrap(err, "failed to start BGP server")
 	}
 
-	log.Info("starting Kubernetes node watcher")
-
-	factory := informers.NewSharedInformerFactory(s.kubeClient, defaultResync)
-	informer := factory.Core().V1().Nodes().Informer()
-
-	watch := newWatcher(s, log)
-	informer.AddEventHandler(watch)
-
-	informer.Run(ctx.Done())
 	return nil
 }

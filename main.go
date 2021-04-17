@@ -1,35 +1,21 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 
 	bnet "github.com/bio-routing/bio-rd/net"
 	bgp "github.com/bio-routing/bio-rd/protocols/bgp/server"
 	"github.com/ffddorf/kube-route-reflector/reflector"
+	"github.com/ffddorf/kube-route-reflector/watcher"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 )
 
-type KubernetesConfig struct {
-	Host      string `yaml:"host"`
-	Token     string `yaml:"token"`
-	TokenFile string `yaml:"token_file"`
-}
-
-func (k *KubernetesConfig) ForClientSet() *rest.Config {
-	return &rest.Config{
-		Host:            k.Host,
-		BearerToken:     k.Token,
-		BearerTokenFile: k.TokenFile,
-	}
-}
-
 type Config struct {
-	Kubernetes KubernetesConfig    `yaml:"kubernetes"`
-	BGP        reflector.BGPConfig `yaml:"bgp"`
+	Clusters []watcher.KubernetesConfig `yaml:"clusters"`
+	BGP      reflector.BGPConfig        `yaml:"bgp"`
 }
 
 func loadConfig(path string) (*Config, error) {
@@ -73,15 +59,12 @@ func main() {
 		"0.0.0.0:179",
 	})
 
-	// configure kubernetes client
-	k8sConf := conf.Kubernetes.ForClientSet()
-	clientset, err := kubernetes.NewForConfig(k8sConf)
-	if err != nil {
-		log.WithError(err).Fatal("failed to create kubernetes client")
+	server := reflector.NewServer(bgpServer, conf.BGP)
+	if err := server.Start(log); err != nil {
+		log.WithError(err).Fatal("bgp server failed to start")
 	}
 
-	server := reflector.NewServer(bgpServer, clientset, conf.BGP)
-	if err := server.Start(log); err != nil {
-		log.WithError(err).Fatal("server failed")
-	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	watcher.WatchClusters(ctx, log, conf.Clusters, server)
 }
