@@ -16,7 +16,7 @@ CGO_ENABLED=0 go build -o kube-route-reflector
 
 ### Binaries
 
-Coming soon
+You can find linux binaries with each release.
 
 ### Configuration
 
