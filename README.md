@@ -24,10 +24,11 @@ Example:
 
 ```yaml
 kubernetes:
-  host: "https://my-cluster:6443"
-  # one or the other
-  token: "service-acount-token"
-  tokenFile: "my-service-account.token"
+  - name: my-cluster
+    host: "https://my-cluster:6443"
+    # one or the other
+    token: "service-acount-token"
+    tokenFile: "my-service-account.token"
 
 bgp:
   router_id: "10.0.1.1"
