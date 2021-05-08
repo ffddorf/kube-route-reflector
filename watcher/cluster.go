@@ -17,6 +17,8 @@ type KubernetesConfig struct {
 	Host      string `yaml:"host"`
 	Token     string `yaml:"token"`
 	TokenFile string `yaml:"token_file"`
+
+	InsecureDisableCertificateVerify bool `yaml:"insecure_disable_certificate_verify"`
 }
 
 func (k *KubernetesConfig) ForClientSet() *rest.Config {
@@ -36,6 +38,7 @@ func WatchClusters(ctx context.Context, log logrus.FieldLogger, configs []Kubern
 
 		// configure kubernetes client
 		k8sConf := conf.ForClientSet()
+		k8sConf.Insecure = conf.InsecureDisableCertificateVerify
 		client, err := kubernetes.NewForConfig(k8sConf)
 		if err != nil {
 			clog.WithError(err).Error("failed to create kubernetes client")

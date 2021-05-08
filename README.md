@@ -30,6 +30,9 @@ clusters:
     token: "service-acount-token"
     tokenFile: "my-service-account.token"
 
+    # insecure: set true when the cluster CA is self-signed
+    insecure_disable_certificate_verify: false
+
 bgp:
   router_id: "10.0.1.1"
   local_as: 45678
