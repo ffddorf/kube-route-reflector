@@ -41,10 +41,15 @@ bgp:
       peer_address: "10.0.128.1"
       peer_as: 45678
 
-      # optional from here on
-      auth_key: "password"
-      passive: false
+      # not required, defaults to false
+      # set this to true for routers towards the edge
+      # of your network, so they learn all routes
+      # from clusters
       route_reflector_client: false
+
+      # optional from here on
+      auth_key: "password" # defaults to no auth
+      passive: false # defaults to active
 
     # more peers
 ```
