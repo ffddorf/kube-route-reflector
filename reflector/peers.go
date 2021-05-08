@@ -3,6 +3,7 @@ package reflector
 import (
 	bnet "github.com/bio-routing/bio-rd/net"
 	bio "github.com/bio-routing/bio-rd/protocols/bgp/server"
+	"github.com/bio-routing/bio-rd/routingtable/vrf"
 )
 
 func (s *Server) EnsurePeer(ip *bnet.IP, name string) error {
@@ -34,21 +35,30 @@ func (s *Server) RemovePeer(ip *bnet.IP) error {
 }
 
 func (s *Server) buildPeerConfig(addr *bnet.IP, name string) bio.PeerConfig {
+	primaryVRF := vrf.GetGlobalRegistry().CreateVRFIfNotExists("primary", 0)
 	return bio.PeerConfig{
-		LocalAddress: s.conf.localAddressIP,
-		PeerAddress:  addr,
-		LocalAS:      s.conf.LocalAS,
-		PeerAS:       s.conf.LocalAS, // IBGP only
-		Passive:      true,           // allow nodes to be offline
-		Description:  name,
-		RouterID:     addr.ToUint32(),
-
-		RouteReflectorClient:       true,
+		AuthenticationKey:          "",
+		AdminEnabled:               true,
+		ReconnectInterval:          DefaultReconnectInterval,
+		HoldTime:                   DefaultHoldTime,
+		KeepAlive:                  DefaultKeepAlive,
+		LocalAddress:               s.conf.localAddressIP,
+		PeerAddress:                addr,
+		TTL:                        0, // todo: route?
+		LocalAS:                    s.conf.LocalAS,
+		PeerAS:                     s.conf.LocalAS,
+		Passive:                    true,
+		RouterID:                   addr.ToUint32(),
+		RouteServerClient:          false,
+		RouteReflectorClient:       false,
 		RouteReflectorClusterID:    0,
 		AdvertiseIPv4MultiProtocol: s.conf.IPv4MultiProtocol,
-
-		// todo: configure filters
-		IPv4: &bio.AddressFamilyConfig{},
-		IPv6: &bio.AddressFamilyConfig{},
+		IPv4: &bio.AddressFamilyConfig{
+			ImportFilterChain: allFilterChain,
+			ExportFilterChain: noneFilterChain,
+		},
+		IPv6:        &bio.AddressFamilyConfig{},
+		VRF:         primaryVRF,
+		Description: name,
 	}
 }
