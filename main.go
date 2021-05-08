@@ -61,7 +61,7 @@ func main() {
 		"0.0.0.0:179",
 	})
 
-	server := reflector.NewServer(bgpServer, conf.BGP)
+	server := reflector.NewServer(log.WithField("component", "reflector"), bgpServer, conf.BGP)
 	if err := server.Start(log); err != nil {
 		log.WithError(err).Fatal("bgp server failed to start")
 	}

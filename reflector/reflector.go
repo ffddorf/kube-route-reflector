@@ -14,11 +14,12 @@ type Server struct {
 	log           logrus.FieldLogger
 }
 
-func NewServer(bgp bio.BGPServer, bgpConf BGPConfig) *Server {
+func NewServer(log logrus.FieldLogger, bgp bio.BGPServer, bgpConf BGPConfig) *Server {
 	return &Server{
 		bgp:           bgp,
 		conf:          bgpConf,
 		staticPeerSet: make(map[bnet.IP]struct{}),
+		log:           log,
 	}
 }
 
