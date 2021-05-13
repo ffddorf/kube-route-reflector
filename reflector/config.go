@@ -73,7 +73,7 @@ func (c *BGPConfig) Peers() ([]bgp.PeerConfig, error) {
 			RouteServerClient:          false,
 			RouteReflectorClient:       p.RouteReflectorClient,
 			RouteReflectorClusterID:    p.RouteReflectorClusterID,
-			AdvertiseIPv4MultiProtocol: true,
+			AdvertiseIPv4MultiProtocol: false,
 			IPv4: &bgp.AddressFamilyConfig{
 				ImportFilterChain: allFilterChain,
 				ExportFilterChain: allFilterChain,
