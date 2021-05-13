@@ -46,13 +46,13 @@ const (
 
 func (c *BGPConfig) Peers() ([]bgp.PeerConfig, error) {
 	primaryVRF := vrf.GetGlobalRegistry().CreateVRFIfNotExists("primary", 0)
+	routerID, err := bnet.IPFromString(c.RouterID)
+	if err != nil {
+		return nil, err
+	}
 
 	list := make([]bgp.PeerConfig, 0, len(c.StaticPeers))
 	for _, p := range c.StaticPeers {
-		routerID, err := bnet.IPFromString(p.RouterID)
-		if err != nil {
-			return nil, err
-		}
 		addr, err := bnet.IPFromString(p.Address)
 		if err != nil {
 			return nil, err
