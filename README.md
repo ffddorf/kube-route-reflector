@@ -62,3 +62,18 @@ bgp:
 ```sh
 kube-route-reflector -config config.yaml -debug
 ```
+
+## Cluster Config
+
+```
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-route-reflector
+  namespace: kube-system
+EOF
+
+kubectl create clusterrole node-viewer --verb=get,list,watch --resource=nodes
+kubectl create clusterrolebinding kube-route-reflector-binding --clusterrole=node-viewer --serviceaccount=kube-system/kube-route-reflector
+```
