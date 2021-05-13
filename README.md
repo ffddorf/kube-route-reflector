@@ -33,6 +33,10 @@ clusters:
     # insecure: set true when the cluster CA is self-signed
     insecure_disable_certificate_verify: false
 
+api: # optional
+  enabled: false # set true to enable api to get insights
+  address: "localhost:6655" # default, optional
+
 bgp:
   router_id: "10.0.1.1"
   local_as: 45678
